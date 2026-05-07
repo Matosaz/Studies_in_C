@@ -1,0 +1,53 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+    
+    // C ---------------------------------------------------------
+
+      "name": "Run C normal",
+      "type": "cppdbg",
+      "request": "launch",
+
+      "program": "${fileDirname}\\${fileBasenameNoExtension}.exe",
+
+      "args": [],
+
+      "stopAtEntry": false,
+
+      "cwd": "${fileDirname}",
+
+      "externalConsole": true,
+
+      "MIMode": "gdb",
+
+      "miDebuggerPath": "C:\\msys64\\ucrt64\\bin\\gdb.exe",
+
+      "preLaunchTask": "Build C (active file)"
+    },
+
+
+    // Raylib ---------------------------------------------------------
+    {
+      "name": "Run Raylib",
+      "type": "cppdbg",
+      "request": "launch",
+
+      "program": "${fileDirname}\\${fileBasenameNoExtension}.exe",
+
+      "args": [],
+
+      "stopAtEntry": false,
+
+      "cwd": "${fileDirname}",
+
+      "externalConsole": true,
+
+      "MIMode": "gdb",
+
+      "miDebuggerPath": "C:\\msys64\\ucrt64\\bin\\gdb.exe",
+
+      "preLaunchTask": "Build Raylib"
+    }
+  ]
+}

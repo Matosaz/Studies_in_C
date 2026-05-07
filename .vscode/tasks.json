@@ -1,0 +1,52 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build C (active file)",
+      "type": "shell",
+      "command": "C:\\msys64\\ucrt64\\bin\\gcc.exe",
+      "args": [
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-g",
+
+        "${file}",
+
+        "-o",
+        "${fileDirname}\\${fileBasenameNoExtension}.exe"
+      ],
+      "problemMatcher": ["$gcc"],
+      "group": "build"
+    },
+
+    {
+      "label": "Build Raylib",
+      "type": "shell",
+      "command": "C:\\msys64\\ucrt64\\bin\\gcc.exe",
+      "args": [
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-g",
+
+        "${file}",
+
+        "-o",
+        "${fileDirname}\\${fileBasenameNoExtension}.exe",
+
+        "-IC:\\Projects\\Studies_in_C\\Raylib\\raylib-6.0_win64_mingw-w64\\include",
+
+        "-LC:\\Projects\\Studies_in_C\\Raylib\\raylib-6.0_win64_mingw-w64\\lib",
+
+        "-lraylib",
+        "-lopengl32",
+        "-lgdi32",
+        "-lwinmm"
+      ],
+      "problemMatcher": ["$gcc"],
+      "group": "build"
+    }
+  ]
+}

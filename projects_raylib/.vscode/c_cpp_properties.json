@@ -1,0 +1,21 @@
+{
+  "configurations": [
+    {
+      "name": "Win32",
+
+      "includePath": [
+        "${workspaceFolder}/**",
+
+        "C:/Projects/Studies_in_C/Raylib/raylib-6.0_win64_mingw-w64/include"
+      ],
+
+      "compilerPath": "C:/msys64/ucrt64/bin/gcc.exe",
+
+      "cStandard": "c17",
+
+      "intelliSenseMode": "windows-gcc-x64"
+    }
+  ],
+
+  "version": 4
+}
