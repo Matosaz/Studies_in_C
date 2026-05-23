@@ -2,27 +2,19 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Build Raylib CMD",
-      "type": "process",
-      "command": "C:\\Windows\\System32\\cmd.exe",
+      "label": "Build Raylib Active File",
+      "type": "shell",
+      "command": "cmd.exe",
       "args": [
         "/d",
         "/c",
-        "call C:\\Projects\\Studies_in_C\\projects_raylib\\buildraylib.bat"
+        "set \"PATH=C:\\msys64\\ucrt64\\bin;%PATH%\" && gcc.exe \"${file}\" -o \"${fileDirname}\\${fileBasenameNoExtension}.exe\" -I\"C:\\Projects\\Studies_in_C\\Raylib\\raylib-6.0_win64_mingw-w64\\include\" -L\"C:\\Projects\\Studies_in_C\\Raylib\\raylib-6.0_win64_mingw-w64\\lib\" -lraylib -lopengl32 -lgdi32 -lwinmm"
       ],
-      "options": {
-        "cwd": "C:\\Projects\\Studies_in_C\\projects_raylib"
-      },
       "group": {
         "kind": "build",
         "isDefault": true
       },
-      "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared",
-        "clear": true
-      }
+      "problemMatcher": []
     }
   ]
 }

@@ -1,0 +1,4 @@
+-std=c17
+-x
+c
+-IC:/Projects/Studies_in_C/Raylib/raylib-6.0_win64_mingw-w64/include
