@@ -4,17 +4,25 @@
     {
       "label": "Build Raylib Active File",
       "type": "shell",
-      "command": "cmd.exe",
+      "command": "gcc",
       "args": [
-        "/d",
-        "/c",
-        "set \"PATH=C:\\msys64\\ucrt64\\bin;%PATH%\" && gcc.exe \"${file}\" -o \"${fileDirname}\\${fileBasenameNoExtension}.exe\" -I\"C:\\Projects\\Studies_in_C\\Raylib\\raylib-6.0_win64_mingw-w64\\include\" -L\"C:\\Projects\\Studies_in_C\\Raylib\\raylib-6.0_win64_mingw-w64\\lib\" -lraylib -lopengl32 -lgdi32 -lwinmm"
+        "${file}",
+        "-o",
+        "${fileDirname}/${fileBasenameNoExtension}",
+        "-I/home/matheus/raylib/src",
+        "-L/home/matheus/raylib/src",
+        "-lraylib",
+        "-lGL",
+        "-lm",
+        "-lpthread",
+        "-ldl",
+        "-lrt",
+        "-lX11"
       ],
       "group": {
         "kind": "build",
         "isDefault": true
-      },
-      "problemMatcher": []
+      }
     }
   ]
 }

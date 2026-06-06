@@ -2,7 +2,7 @@
   "C_Cpp.intelliSenseEngine": "disabled",
   "clangd.arguments": [
     "--enable-config",
-    "--query-driver=C:/msys64/ucrt64/bin/gcc.exe"
+    "--query-driver=/usr/lib64/gdb"
   ],
   "terminal.integrated.defaultProfile.windows": "Command Prompt"
 }
