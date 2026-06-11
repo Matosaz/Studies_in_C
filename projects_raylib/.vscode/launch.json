@@ -5,11 +5,11 @@
       "name": "Run Raylib Active File",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${fileDirname}\\${fileBasenameNoExtension}.exe",
+      "program": "${fileDirname}/${fileBasenameNoExtension}",
       "cwd": "${fileDirname}",
       "externalConsole": true,
       "MIMode": "gdb",
-      "miDebuggerPath": "C:\\msys64\\ucrt64\\bin\\gdb.exe",
+      "miDebuggerPath": "/usr/bin/gdb",
       "preLaunchTask": "Build Raylib Active File"
     }
   ]
