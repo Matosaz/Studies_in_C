@@ -32,13 +32,12 @@ int main(){
     SetTargetFPS(60);
 
     
-    // Vector2 points[(columns * rows) + 1]; //Array to store random points within each cell
-    // for(int i = 0; i < columns * rows; i++){
-        
+    Vector2 points[(columns * rows) + 1]; //Array to store random points within each cell
+    for(int i = 0; i < columns * rows; i++){
 
-    //     points[i].x = (float)(GetRandomValue(0, cellsize - 1) + (i / rows) * cellsize); //Random x position within the cell
-    //     points[i].y = (float)(GetRandomValue(0, cellsize - 1) + (i % columns) * cellsize); //Random y position within the cell
-    //     }
+        points[i].x = (float)(GetRandomValue(0, cellsize - 1) + (i / rows) * cellsize); //Random x position within the cell
+        points[i].y = (float)(GetRandomValue(0, cellsize - 1) + (i % columns) * cellsize); //Random y position within the cell
+        }
     
 
     Vector2 gradients[columns + 1][rows + 1];
@@ -69,7 +68,7 @@ int main(){
                 DrawRectangleLines(cellX, cellY, cellsize, cellsize, LIGHTGRAY);
                 generateVector(cellX, cellY, gradients[i][j], vectorLength);
                 DrawCircleV((Vector2){cellX, cellY}, 1.75, RED);
-      
+                // drawRandomPoint(cellX, cellY, points[i]);
             }
             
         }
