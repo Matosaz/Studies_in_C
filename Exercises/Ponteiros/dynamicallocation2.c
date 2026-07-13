@@ -12,7 +12,7 @@ int main(){
     
     double average = 0;
 
-
+ 
     if(ptr_array == NULL){
         printf("Memory allocation failed. \n");
         return 1;

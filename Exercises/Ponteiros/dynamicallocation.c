@@ -3,7 +3,6 @@
 
 int main(){
 
-
     int n;
 
     int *ptr_n = malloc(sizeof(int));

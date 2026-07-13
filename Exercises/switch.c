@@ -42,9 +42,10 @@ int main()
         printf("It is Sunday");
         break;
 
-    default:
+  default:
         printf("Please, enter only numbers beetween 1 and 7");
         break;
+        
     }
 
     return 0;
