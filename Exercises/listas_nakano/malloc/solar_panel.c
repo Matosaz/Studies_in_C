@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <time.h>
 
 void imprimir(float **matriz, int linhas, int colunas){
     for(int i = 0; i < linhas; i++){
@@ -12,7 +12,7 @@ void imprimir(float **matriz, int linhas, int colunas){
 }
 
 int main() {
-    
+    srand(time(NULL));
     float **matriz;
     int linhas, colunas;
     printf("Digite o número de linhas do painel: \n");
@@ -21,7 +21,6 @@ int main() {
     printf("Digite o número de colunas do painel: \n");
     scanf("%d", &colunas);
     
-    float maior = 0.0;
     float volts;
     float soma = 0;
 
@@ -39,15 +38,16 @@ int main() {
     }
     float media = soma / (linhas * colunas);
    
- int maior_l;
- int maior_c;
+    int maior_l;
+    int maior_c;
+    float maior = matriz[0][0];
 
     for(int i = 0; i < linhas; i++){
         for(int j = 0; j < colunas; j++){
-            if(matriz[i][j+1] > maior && j+1 < colunas){
-                maior = matriz[i][j+1];
+            if(matriz[i][j] > maior){
+                maior = matriz[i][j];
                 maior_l = i;
-                maior_c = j+1;
+                maior_c = j;
             }   
         }
     }
