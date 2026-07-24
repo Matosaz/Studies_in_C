@@ -1,59 +1,39 @@
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <time.h>
+#include <string.h>
 
-void imprime(int **m, int linhas, int colunas) {
-    for (int i = 0; i < linhas; i++){
-        for (int j = 0; j < colunas; j++){
-            printf("%d ", m[i][j]);
-        }
-        printf("\n");
-    }
-}
-// J = 0 || J = colunas - 1         // I = 0 || i = linhas - 1;
-// j = 1 || j = colunas - 2         // i = 1 || i = linhas - 2;
-void preenche(int **mat, int linhas, int colunas){
-    
-    int camadas = (linhas < colunas ? linhas : colunas) / 2;
-    for(int camada = 0; camada < camadas; camada++){
-        for(int i = camada; i < linhas - camada; i++){
-            for(int j = camada; j <colunas - camada; j++){
-                if(j == camada ||  j == colunas - camada - 1 || i == camada || i == linhas - camada - 1) {
-                    mat[i][j] = camada;
-                }
-                else{
-                    mat[i][j] = camada + 1;
-
-                }
-            }
-        }
-    }    
+struct Endereco{
+    char cidade[20];
 };
 
-int main() {
-   int **mat;
-   int linhas;
-   int colunas;
+struct Pessoa{
+    char *nome;
+    struct Endereco *endereco;
+};
+ 
+void mudaAll(struct Pessoa *p, char *novoNome, char *novaCidade){
 
-   printf("Insira o número de linhas: \n");
-   scanf("%d", &linhas);
-   
-   printf("Insira o número de colunas: \n");
-   scanf("%d", &colunas);
-   
-   mat = (int **) calloc(linhas, sizeof(int *));
+    strcpy(p->nome, novoNome);
+    strcpy(p->endereco->cidade, novaCidade);
+};
 
-   for(int i = 0; i < linhas; i++){
-    mat[i] = (int *) calloc(colunas, sizeof(int));
-   }
-    preenche(mat,  linhas,  colunas);
-    imprime(mat, linhas, colunas); // ERRO de compilação
-
-    for(int i = 0; i < linhas; i++){
-        free(mat[i]);
-    }
-
-    free(mat);
-    mat = NULL;
+int main(){
     
+    struct Endereco end1 = {"Osasco"};
+    char p[25] = "Ana Isabela";
+
+    struct Pessoa p1 = {p, &end1};
+    
+    printf("%s\n",p1.endereco->cidade);
+    printf("%s\n",p1.nome);
+
+    struct Pessoa p2 = p1;
+    printf("%s %s\n",p2.nome,p2.endereco->cidade);
+
+    mudaAll(&p2,"Fernando", "Sao Paulo");
+
+    printf("%s %s\n",p1.nome,p1.endereco->cidade);
+ 
     return 0;
 }
