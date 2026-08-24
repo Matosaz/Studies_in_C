@@ -8,7 +8,7 @@ int main() {
     int **matriz;
     int linhas, colunas;
     
-    printf("Quantas companhias aéreas terãovoos hoje? \n");
+    printf("Quantas companhias aéreas terão voos hoje? \n");
     scanf("%d", &linhas);
     
     matriz = malloc(linhas * sizeof(int*));

@@ -5,6 +5,7 @@
 
 struct Endereco{
     char cidade[20];
+    char estado[20];
 };
 
 struct Pessoa{
@@ -13,19 +14,18 @@ struct Pessoa{
 };
  
 void mudaAll(struct Pessoa *p, char *novoNome, char *novaCidade){
-
     strcpy(p->nome, novoNome);
     strcpy(p->endereco->cidade, novaCidade);
 };
 
 int main(){
     
-    struct Endereco end1 = {"Osasco"};
+    struct Endereco end1 = {"Osasco", "São Paulo"};
     char p[25] = "Ana Isabela";
 
     struct Pessoa p1 = {p, &end1};
     
-    printf("%s\n",p1.endereco->cidade);
+    printf("%s - %s\n",p1.endereco->cidade, p1.endereco->estado);
     printf("%s\n",p1.nome);
 
     struct Pessoa p2 = p1;
