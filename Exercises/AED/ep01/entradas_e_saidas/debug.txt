@@ -1,0 +1,27 @@
+Planilha inicializada. Total de células: 0
+DEfinir: (1,1) = 100
+Buscnado célula
+Chergou aqui
+TEste
+Chegou aqui e é nulo
+Nova valor: 100
+
+DEfinir: (1,2) = 200
+Buscnado célula
+Chergou aqui
+TEste
+Chegou aqui e é nulo
+Nova valor: 200
+
+DEfinir: (1,3) = 300
+Buscnado célula
+Chergou aqui
+TEste
+Chegou aqui e é nulo
+Nova valor: 300
+
+DEfinir: (1,2) = 999
+Buscnado célula
+Chergou aqui
+TEste
+Celula existe. Valor: 200Valor atualizado para: 999
