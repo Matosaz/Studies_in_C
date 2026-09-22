@@ -45,9 +45,6 @@ void lowertoupper(){
     }
    }
        printf("%s", str);
-
-    
-
 }
 
 void uppertolower(){
