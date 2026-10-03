@@ -63,7 +63,8 @@ typedef struct {
     Funções auxiliar para leitura das strings dos comandos
  ---------------------------------------------------------------------- */
 void liberar_tudo(planilha_t *p);
-
+bool remover_celula(planilha_t *p, int lin, int col);
+void exibir_planilha(planilha_t *p);
 int igual(char* a, char* b) {
     int i = 0;
     while (a[i] == b[i] && a[i] != '\0') i++;
@@ -82,8 +83,6 @@ void inicializar_planilha(planilha_t *p) {
     p->primeira_linha =  NULL; //Quando está vazia aponta para NULL;
     p->total_celulas = 0; //Total de células não-nulas é inicialmente zero;
     p->historico.topo = NULL;
-
-    fprintf(stderr, "Planilha inicializada. Total de células: %d\n", p->total_celulas);
 }
 
 celula_t* buscar_celula(planilha_t *p, int lin, int col,
@@ -91,9 +90,6 @@ celula_t* buscar_celula(planilha_t *p, int lin, int col,
                       fileira_t** fil_ant_linha, fileira_t** fil_ant_coluna) {
     /* TODO: localize a celula (lin,col), preencha os quatro antecessores 
         por referencia, retorne NULL se a celula nao existir */
-
-    fprintf(stderr,"Buscnado célula\n");;
-    fprintf(stderr,"Chergou aqui\n");
 
     *cel_ant_coluna = NULL;
     *cel_ant_linha = NULL;
@@ -121,8 +117,6 @@ celula_t* buscar_celula(planilha_t *p, int lin, int col,
             fil_lin = fil_lin->proximo;
         }
         fil_lin_encontrada = (fil_lin != NULL && fil_lin->indice == lin); //Se encontrar a linha retorna true, senão false;
-            fprintf(stderr, "TEste\n"); // Added \n for clean output
-
 
     if(fil_lin_encontrada){
         celula_t *atual= fil_lin->primeiro; //Elemento Aij qualquer atual na linha i
@@ -138,13 +132,13 @@ celula_t* buscar_celula(planilha_t *p, int lin, int col,
     }
 
     //Colunas:
-        while(fil_col != NULL && fil_col->indice < col){//Percorremos as fileiras de colunas até que o índice dela seja igual ao solicitado ou não seja encontrado
+        while(fil_col != NULL && fil_col->indice < col){//Percorre as fileiras de colunas até que o índice dela seja igual ao solicitado ou não seja encontrado
             *fil_ant_coluna = fil_col;
             fil_col = fil_col->proximo;
         }    
             fil_col_encontrada = (fil_col != NULL && fil_col->indice == col);
 
-        //Encontramos a cel_atual_col, a coluna do elemento que buscamos
+        //Encontra a cel_atual_col,coluna do elemento buscado
 
     if(fil_col_encontrada){    
         celula_t *atual= fil_col->primeiro; //Elemento Aij qualquer na coluna j
@@ -167,14 +161,13 @@ celula_t* buscar_celula(planilha_t *p, int lin, int col,
 
 elo_pilha_t *push(planilha_t *p, int lin, int col, int valor){
     elo_pilha_t *novo = malloc(sizeof(elo_pilha_t));
-    if(novo == NULL) return false; //TO adjust
+    if(novo == NULL) return false;
     
     novo->op.transposicao = false;
     novo->op.tamanho = 0;
     novo->op.linha = lin;
     novo->op.coluna = col;
     novo->op.valor_anterior = valor;
-    fprintf(stderr, "Lin: %d Col%d ValorAnt: %d", lin, col, valor);
     
     novo->proximo = p->historico.topo;
     p->historico.topo = novo;
@@ -213,40 +206,25 @@ int somar_intervalo(planilha_t* p, int linha_ini, int linha_fim, int coluna_ini,
     // TODO: some os valores das celulas nao nulas no intervalo dado
     
     int soma = 0;
-    fileira_t *fileira = p->primeira_linha; 
-
-    while((fileira != NULL && fileira->primeiro != NULL) && linha_ini <= linha_fim){
-        celula_t *atual = fileira->primeiro;
-
-            while(atual != NULL){
-                if(atual->coluna >= coluna_ini && atual->coluna <= coluna_fim){
-                    soma += atual->valor;
+    fileira_t *fileira_linha = p->primeira_linha;
+  
+   if(fileira_linha != NULL){
+            for(fileira_linha = fileira_linha; fileira_linha && fileira_linha->indice <= linha_fim; fileira_linha = fileira_linha->proximo){
+                if(fileira_linha->indice < linha_ini) continue; // Continua enquanto o índice não for encontrado
+                for(celula_t *atual = fileira_linha->primeiro; atual != NULL && atual->coluna <= coluna_fim; atual = atual->proxima_linha){
+                    if(atual->coluna >= coluna_ini){                    
+                        soma += atual->valor;
+                    }
                 }
-                atual = atual->proxima_linha; //Necessitar ser fora do if, caso contrário não avançaria
             }
-        linha_ini++; 
-        fileira = fileira->proximo; //Avança para a próxima fileira
-    }
+        }
+
     return soma;
 }
 
 int contar_nao_nulas(planilha_t* p) {
     // TODO: retorne a quantidade de celulas nao nulas
-    int num_celulas = 0;
-    fileira_t *fileira = p->primeira_linha;
-    
-    while(fileira != NULL){
-        celula_t *atual = fileira->primeiro;
-        while(atual != NULL){
-            if(atual->valor != 0){
-                num_celulas++;
-            }
-            atual = atual->proxima_linha;
-        }
-        fileira = fileira->proximo;
-    }
-    
-    return num_celulas;
+    return p->total_celulas;
 }
 
 //Função para criar novas fileiras e verificar se necessita caso já exista
@@ -284,55 +262,30 @@ bool definir_celula(planilha_t* p, int lin, int col, int valor) {
        empilhando em p->historico quando houver alteracao efetiva.
        Retorna true se houve alteracao, false se foi operacao nula. */
 
-    fprintf(stderr, "DEfinir: (%d,%d) = %d\n", lin, col, valor);
     celula_t *cel_ant_coluna = NULL;
     celula_t *cel_ant_linha = NULL;
     fileira_t *fil_ant_coluna = NULL; 
     fileira_t *fil_ant_linha = NULL;
 
     celula_t* atual = buscar_celula(p, lin, col, &cel_ant_linha, &cel_ant_coluna, &fil_ant_linha, &fil_ant_coluna); 
-
     
     if((atual == NULL && valor == 0) || (atual != NULL && atual->valor == valor)) {
         return false;
     }//Evita duplicata e inserção em célula inexistente
 
 
-
   if(atual != NULL) {
-    fprintf(stderr, "Celula existe. Valor: %d", atual->valor);
-
     // celula existe e valor != 0 (ATUALIZAR);
     if(valor != 0) {
         if(!op_desfazer){
             elo_pilha_t *ultima_celula = push(p, lin, col, atual->valor);   
         }
+
         atual->valor = valor;
-        fprintf(stderr, "Valor atualizado para: %d", valor);
         return true;
     } 
     else { //Célula existe e valor = 0: (REMOVER)
-        if(!op_desfazer){
-            elo_pilha_t *ultima_celula = push(p, lin, col, atual->valor);   
-        }
-        if(cel_ant_linha != NULL) {
-            cel_ant_linha->proxima_linha = atual->proxima_linha;
-        }
-        else if(fil_ant_linha != NULL && fil_ant_linha->proximo != NULL){
-            fileira_t *fil_linha = fil_ant_linha->proximo;
-            fil_ant_linha->proximo = fil_linha->proximo;//Fileira atual nula é pulada (bypass)
-        }
-        
-        if(cel_ant_coluna != NULL) {
-            cel_ant_coluna->proxima_coluna = atual->proxima_coluna;
-        }
-        else if(fil_ant_coluna != NULL && fil_ant_coluna->proximo != NULL){
-            fileira_t *fil_coluna = fil_ant_coluna->proximo;
-            fil_ant_coluna->proximo = fil_coluna->proximo;//Fileira atual nula é pulada (bypass)
-        }
-            free(atual);
-            p->total_celulas--;
-            return true;
+      return remover_celula(p, lin, col);
         }
     return true;
   } 
@@ -344,10 +297,8 @@ bool definir_celula(planilha_t* p, int lin, int col, int valor) {
         }
         celula_t *nova = (celula_t *)malloc(sizeof(celula_t));
         if (nova == NULL) return false;
-        fprintf(stderr, "Chegou aqui e é nulo\n");
 
         nova->valor = valor;
-        fprintf(stderr, "Nova valor: %d\n\n", nova->valor);
         nova->coluna = col;
         nova->linha = lin;
 
@@ -373,11 +324,8 @@ bool definir_celula(planilha_t* p, int lin, int col, int valor) {
             nova->proxima_coluna = fil_coluna->primeiro;
             fil_coluna->primeiro = nova;
         }
-
-        //  fprintf(stderr," Chegou aqui: %d\n",p->historico.topo->op.valor_anterior);
           
         p->total_celulas++;
-        // free(nova); Chamar função de free
         return true;
 
     } else { // v== 0 // Operação NULA
@@ -453,9 +401,7 @@ bool desligar_celula(planilha_t * p, celula_t *atual){
     fileira_t *fil_ant_coluna = NULL; 
     fileira_t *fil_ant_linha = NULL;
 
-    fprintf(stderr, "CHEGOU AQUI TRANSPOR3\n");
     buscar_celula(p, atual->linha, atual->coluna, &cel_ant_linha, &cel_ant_coluna, &fil_ant_linha, &fil_ant_coluna); 
-    fprintf(stderr, "CHEGOU AQUI TRANSPOR3\n");
 
     fileira_t *fil_linha = (fil_ant_linha != NULL) ? fil_ant_linha->proximo : p->primeira_linha; //Se a fileria anterior for NULL, é a primeira linha, senão, é uma linha com anterior válido.
 
@@ -504,7 +450,7 @@ bool inserir_celula_tranposicao(planilha_t *p, celula_t *atual){
         buscar_celula(p, atual->linha, atual->coluna, &cel_ant_linha, &cel_ant_coluna, &fil_ant_linha, &fil_ant_coluna); 
 
         fileira_t *fil_linha = criar_fileiras(&p->primeira_linha, fil_ant_linha, atual->linha);
-        fileira_t *fil_coluna = criar_fileiras(&p->primeira_coluna, fil_ant_coluna, atual->coluna);;
+        fileira_t *fil_coluna = criar_fileiras(&p->primeira_coluna, fil_ant_coluna, atual->coluna);
 
         if(fil_linha == NULL || fil_coluna == NULL){
             return false;
@@ -533,12 +479,12 @@ bool transpor(planilha_t* p, int lin, int col, int tamanho) {
     // fileira_t *i = p->primeira_linha;
  
     if(tamanho <= 0) return false; 
-    if((lin + tamanho) > INT_MAX || (col + tamanho) > INT_MAX){
+    if((lin >= INT_MAX - tamanho)|| (col >= INT_MAX - tamanho)){
                     return false;
      }        
- 
         int lin_fim = lin + tamanho;
         int col_fim = col + tamanho;
+        
         int tam_transpor = 0;
 
         fileira_t *fil_atual = p->primeira_linha;
@@ -573,30 +519,32 @@ bool transpor(planilha_t* p, int lin, int col, int tamanho) {
                 }
             }
         }
-
         
         for(int num_celulas = 0; num_celulas < tam_transpor; num_celulas++){
             celula_t *atual = celulas[num_celulas];
             desligar_celula(p, celulas[num_celulas]);
             
             celula_t submatriz;
-             submatriz.linha = atual->linha - lin; // Para encontrar as coordenadas relativas a submatriz formada por lin e col
-             submatriz.coluna = atual->coluna - col;
-             
-             int aux; 
-             aux = submatriz.linha; //Transposição da submatriz;
-             submatriz.linha = submatriz.coluna;
-             submatriz.coluna = aux;
-
-
-             atual->linha = lin + submatriz.linha; // Retorno os valores de posição da submatriz para a escala da matriz normal
-             atual->coluna = col + submatriz.coluna;
-             inserir_celula_tranposicao(p, atual);
+            submatriz.linha = atual->linha - lin; // Para encontrar as coordenadas relativas a submatriz formada por lin e col
+            submatriz.coluna = atual->coluna - col;
+            
+            int aux; 
+            aux = submatriz.linha; //Transposição da submatriz;
+            submatriz.linha = submatriz.coluna;
+            submatriz.coluna = aux;
+            
+            atual->linha = lin + submatriz.linha; // Retorno os valores de posição da submatriz para a escala da matriz normal
+            atual->coluna = col + submatriz.coluna;
         }
+        
+        for(int num_celulas = 0; num_celulas < tam_transpor; num_celulas++){
+            inserir_celula_tranposicao(p, celulas[num_celulas]);
+        }
+
         free(celulas);  
 
 
-        if(!op_desfazer){       
+        if(!op_desfazer && tam_transpor > 0){       
             push(p, lin, col, 0);   
 
          if(p->historico.topo != NULL){
@@ -663,14 +611,9 @@ void exibir_historico(planilha_t* p) {
     /* TODO: imprima "linha coluna valor_anterior" por linha, do topo
        para a base. Se vazio, imprima "HISTORICO VAZIO" */
         elo_pilha_t *atual = p->historico.topo;
-         
-       if(p->historico.topo->op.transposicao == true){
-            printf("T ");
-            while(atual != NULL){
-                printf("%d %d %d\n", atual->op.linha, atual->op.coluna, atual->op.valor_anterior);
-                atual = atual->proximo;
-            }
-        }   
+        if(atual == NULL) return;
+       
+        if(atual->op.transposicao == true) printf("T ");
           while(atual != NULL){
                 printf("%d %d %d\n", atual->op.linha, atual->op.coluna, atual->op.valor_anterior);
                 atual = atual->proximo;
@@ -694,19 +637,16 @@ void liberar_tudo(planilha_t* p) {
         while(atual != NULL){
             celula_t *prox_linha = atual->proxima_linha;
             free(atual);
-            fprintf(stderr, "Free celulas!\n");
             atual = prox_linha;
         }
         fileira_t * prox_fil_linha = fil_linha->proximo;
         free(fil_linha); //Logo após fornecer free em todas as celulas de uma fileira, fornece free na fileira e segue para a prox;
-        fprintf(stderr, "Free fileiras!\n!");
         fil_linha = prox_fil_linha;
     }
     
     while(fil_coluna != NULL){
         fileira_t * prox_fil_col = fil_coluna->proximo;
         free(fil_coluna); //Logo após fornecer free em todas as celulas de uma fileira, fornece free na fileira e segue para a prox;
-        fprintf(stderr, "Free fileiras!\n!");
         fil_coluna = prox_fil_col;
     }
 
@@ -719,7 +659,6 @@ void liberar_tudo(planilha_t* p) {
         free_ptr->proximo = NULL; //To adjust: passar ponteiro inválido
         
         free(free_ptr);
-        fprintf(stderr, "Free histórico!\n!");
     }
     reinicializar(p);
 }
