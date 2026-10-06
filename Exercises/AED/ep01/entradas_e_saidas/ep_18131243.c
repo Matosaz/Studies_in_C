@@ -292,10 +292,10 @@ bool definir_celula(planilha_t* p, int lin, int col, int valor) {
   else {
     // celula nao existe e valor != 0 (CRIAR)
     if (valor != 0) { //CRIAR uma nova célula
+        celula_t *nova = (celula_t *)malloc(sizeof(celula_t));
         if(!op_desfazer){
             elo_pilha_t *ultima_celula = push(p, lin, col, 0);   
         }
-        celula_t *nova = (celula_t *)malloc(sizeof(celula_t));
         if (nova == NULL) return false;
 
         nova->valor = valor;
@@ -333,7 +333,6 @@ bool definir_celula(planilha_t* p, int lin, int col, int valor) {
       return false;
     }
   }
-    liberar_tudo(p);
     return false;
 }
 
@@ -562,10 +561,13 @@ bool transpor(planilha_t* p, int lin, int col, int tamanho) {
 bool desfazer(planilha_t* p) {
     /* TODO: desempilhe de p->historico e restaure o valor anterior.
        Retorna false se o historico estiver vazio, true caso contrario. */
-    if(p == NULL || p->historico.topo == NULL) return false;
+    if(p == NULL) return false;
 
+    if (p->historico.topo == NULL) {
+        printf("HISTORICO VAZIO\n");
+        return false;
+    }
     elo_pilha_t* historico = pop(p);
-    if(historico == NULL) return false;
     
 
     op_desfazer = true; // Define com true a operação para expressar que "desfazer" está sendo realizada para diferenciar na "definir"
@@ -587,7 +589,7 @@ bool desfazer(planilha_t* p) {
             definir_celula(p, lin, col, valor_anterior);
         }
     }
-    
+     
     op_desfazer = false;
     free(historico);
    
@@ -599,25 +601,38 @@ void exibir_planilha(planilha_t *p) {
        de linha e, dentro de cada linha, de coluna. Se vazia, imprima
        "PLANILHA VAZIA" */
     fileira_t *i = p->primeira_linha;
-
+    
+    if (contar_nao_nulas(p)) {
+        printf("PLANILHA\n");
+    } else {
+        printf("PLANILHA VAZIA\n");
+    }
+   
     for(i = p->primeira_linha; i != NULL; i = i->proximo){
         for(celula_t *j = i->primeiro; j != NULL; j = j->proxima_linha){
             printf("%d %d %d\n", j->linha, j->coluna, j->valor);
         }
     }
+       
 }
 
 void exibir_historico(planilha_t* p) {
     /* TODO: imprima "linha coluna valor_anterior" por linha, do topo
        para a base. Se vazio, imprima "HISTORICO VAZIO" */
         elo_pilha_t *atual = p->historico.topo;
-        if(atual == NULL) return;
-       
-        if(atual->op.transposicao == true) printf("T ");
-          while(atual != NULL){
+        if(atual == NULL){
+            printf("HISTORICO VAZIO\n");
+            return;
+        }
+
+        printf( "HISTORICO\n");
+        while(atual != NULL){
+                if(atual->op.transposicao == true) printf("T ");
                 printf("%d %d %d\n", atual->op.linha, atual->op.coluna, atual->op.valor_anterior);
                 atual = atual->proximo;
             }
+           
+             
 }
 
 void reinicializar(planilha_t *p){
@@ -707,25 +722,14 @@ int main(int argc, char *argv[]) {
             fprintf(saida, "SOMA %d %d %d %d %d\n", li, lf, ci, cf, somar_intervalo(&p, li, lf, ci, cf));
         } else if (igual(cmd, "CONT")) {
             fprintf(saida, "CONT %d\n", contar_nao_nulas(&p));
+        
         } else if (igual(cmd, "DESFAZER")) {
-            if (!desfazer(&p)) {
-                fprintf(saida, "HISTORICO VAZIO\n");
-            }
+            desfazer(&p);             
         } else if (igual(cmd, "EXIBIR")) {
-            if (contar_nao_nulas(&p)) {
-                fprintf(saida, "PLANILHA\n");
                 exibir_planilha(&p);
-            } else {
-                fprintf(saida, "PLANILHA VAZIA\n");
-            }
         } else if (igual(cmd, "HIST")) {
-            if (p.historico.topo) {
-                fprintf(saida,  "HISTORICO\n");
                 exibir_historico(&p);
-            }
-            else {
-                printf("HISTORICO VAZIO\n");
-            }
+           
         } else if (igual(cmd, "TRANS")) {
             int lin, col, tam;
             fscanf(entrada, "%d %d %d", &lin, &col, &tam);
