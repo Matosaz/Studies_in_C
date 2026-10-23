@@ -1,0 +1,42 @@
+
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build OpenGL (WSL)",
+            "type": "process",
+            "command": "C:\\Windows\\System32\\wsl.exe",
+            "args": [
+                "-d",
+                "Ubuntu",
+                "--",
+                "bash",
+                "-lc",
+                "cd /mnt/c/Projects/Studies_in_C/Exercises/openGL && mkdir -p build && gcc -Iinclude -c include/glad/glad.c -o build/glad.o && g++ -std=c++17 -g -Iinclude src/main.cpp build/glad.o -o build/opengl -lglfw -lGL -ldl -pthread"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
+        {
+            "label": "Run OpenGL (WSL)",
+            "type": "process",
+            "command": "C:\\Windows\\System32\\wsl.exe",
+            "args": [
+                "-d",
+                "Ubuntu",
+                "--",
+                "bash",
+                "-lc",
+                "cd /mnt/c/Projects/Studies_in_C/Exercises/openGL && ./build/opengl"
+            ],
+            "dependsOn": "Build OpenGL (WSL)",
+            "dependsOrder": "sequence",
+            "problemMatcher": []
+        }
+    ]
+}
