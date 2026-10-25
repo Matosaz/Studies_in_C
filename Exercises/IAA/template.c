@@ -60,15 +60,16 @@ void converter(float **matriz, int m){
 }
 
 
-void exibir(float **matriz, int m){
-    printf("%d %d\n", m, m);
-    printf("255\n");
+void exibir(FILE *saida, float **matriz, int m){
+    fprintf(saida, "P2\n");
+    fprintf(saida, "%d %d\n", m, m);
+    fprintf(saida, "255\n");
     
     for(int i = 0; i < m; i++){
         for(int j = 0; j < m; j++){
-            printf("%d ", (int)matriz[i][j]);
+            fprintf(saida, "%d ", (int)matriz[i][j]);
         }
-        printf("\n");
+        fprintf(saida, "\n");
     }
 }
 
@@ -132,51 +133,71 @@ void preencher_matriz_div_conq(float **matriz, int linha_sup, int coluna_dir, in
 
 int main(){
 
+    FILE *entrada = fopen("entrada.txt", "r");
 
-    int n;
-    scanf("%d", &n);
-    int m = (1 << n) + 1; //Tamanho da matriz;
-    float **matriz = inicializar_matriz(m);
-    //Cada elemtno Aij da matriz representa um pixel (A altitude do terreno no caso);
-    //Cada pixel tem valor entre 0 e 255, sendo 0 o ponto mais baixo e 255 o ponto mais alto;
-  
-    for(int i = 0; i < m; i++){
-        for(int j = 0; j < m; j++){
-            matriz[i][j] = 0;
-        }
+    if(entrada == NULL){
+        fprintf(stderr, "Erro na leitura do arquivo de entrada");
+        return 1;
     }
 
+
+    int n, seed;
+    float rugosidade;
     Origem_t origem;
-  
-    int seed = 0;
-    scanf("%d", &seed); //Seed responsável pela randomização 
-    srand(seed);
+    int i = 0;
+    while(fscanf(entrada,  "%d %d %f %f %f %f %f", &n, &seed, &rugosidade, &origem.A, &origem.B, &origem.C, &origem.D) == 6){
+        
+        i++;
+        int m = (1 << n) + 1;
+        float **matriz = inicializar_matriz(m);
 
-    float rugosidade = 0;
-    scanf("%f", &rugosidade);
-    printf("Rugosidade antes: %.2f\n", rugosidade);
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < m; j++) {
+                matriz[i][j] = 0;
+            }
+        }
 
-    //Leitura das origens:
-    scanf("%f %f %f %f", &origem.A, &origem.B, &origem.C, &origem.D);
-    getchar(); 
-    
-    matriz[0][0] = origem.A;
-    matriz[0][m-1] = origem.B;
-    matriz[m-1][0] = origem.C; //Coordenadas das origens (Quatro Cantos + Centro);
-    matriz[m-1][m-1] = origem.D;
+        srand(seed);
+
+        matriz[0][0] = origem.A;
+        matriz[0][m - 1] = origem.B;
+        matriz[m - 1][0] = origem.C;
+        matriz[m - 1][m - 1] = origem.D;
 
 
-    preencher_matriz_div_conq(matriz, 0, m-1, m-1, 0, rugosidade);
-    exibir(matriz,  m);
-    converter(matriz,  m);
-    printf("\n");
-    exibir(matriz,  m);
-    
-    free(matriz);
+        preencher_matriz_div_conq(matriz, 0, m - 1, m - 1, 0, rugosidade);
+        converter(matriz, m);
+
+        char nome_saida[64];
+        snprintf(nome_saida, sizeof(nome_saida), "Saida%d.txt", i);
+
+
+        FILE *saida = fopen(nome_saida, "w");
+        if (saida == NULL) {
+            perror("Erro ao criar arquivo de saida");
+
+            for (int i = 0; i < m; i++) {
+                free(matriz[i]);
+            }
+            free(matriz);
+         
+            fclose(saida);
+            return 1;
+        }
+        exibir(saida, matriz, m);
+        fclose(saida);
+
+
+        for (int i = 0; i < m; i++) {
+            free(matriz[i]);
+        }
+        free(matriz);
+    }
+
+    fclose(entrada);
     // printf("Seed: %.2f \n Rugosidade depois: %.2f\n", seed, rugosidade);
     // printf("Origem A: %d \n Origem B: %d \n Origem C: %d \n Origem D: %d \n", origem.A, origem.B, origem.C, origem.D);
     // printf("Altitude Central: %f \n Rugosidade: %.2f\n", origem.X, rugosidade);
-
 
     return 0;
 }

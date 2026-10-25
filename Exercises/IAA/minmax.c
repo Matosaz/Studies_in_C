@@ -6,6 +6,7 @@ void minMax(int *v, int ini, int fim, int *min, int *max){
     if(ini == fim){
         if(v[ini] < *min) *min = v[ini];
         if(v[ini] > *max) *max = v[ini];
+        
         return;
     }
     int meio = (ini + fim) / 2;
