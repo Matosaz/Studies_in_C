@@ -1,8 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
-#include <limits.h>
-#include <math.h>
 
   typedef struct {
         float A;
@@ -14,18 +12,28 @@
  
 
 float **inicializar_matriz(int m){   
-    float **matriz = (float **)malloc(m  * sizeof(float *));
+    float **matriz = (float **)calloc(m, sizeof(float *));
+    
+    if(matriz == NULL) return NULL;
 
     for(int i = 0; i < m; i++){
-        matriz[i] = (float *)malloc(m * sizeof(float));
+        matriz[i] = (float *)calloc(m, sizeof(float));
+        
+        if(matriz == NULL){
+            for(int j = 0; j < m; j++){
+                free(matriz[j]);
+            }
+            free(matriz);
+            return NULL;
+        }
     }
     return matriz;
 }
+
 // linha_sup = (0, n)
 // coluna_dir = (n, n-1) 
 // linha_inf = linha(n-1, n)
 // coluna_esq = coluna (n, 0)
-
 void converter(float **matriz, int m){
     float min = matriz[0][0];
     float max = matriz[0][0];
@@ -144,18 +152,12 @@ int main(){
     int n, seed;
     float rugosidade;
     Origem_t origem;
-    int i = 0;
-    while(fscanf(entrada,  "%d %d %f %f %f %f %f", &n, &seed, &rugosidade, &origem.A, &origem.B, &origem.C, &origem.D) == 6){
+    int caso = 0;
+    while(fscanf(entrada,  "%d %d %f %f %f %f %f", &n, &seed, &rugosidade, &origem.A, &origem.B, &origem.C, &origem.D) == 7){
         
-        i++;
+        caso++;
         int m = (1 << n) + 1;
         float **matriz = inicializar_matriz(m);
-
-        for (int i = 0; i < m; i++) {
-            for (int j = 0; j < m; j++) {
-                matriz[i][j] = 0;
-            }
-        }
 
         srand(seed);
 
@@ -169,7 +171,7 @@ int main(){
         converter(matriz, m);
 
         char nome_saida[64];
-        snprintf(nome_saida, sizeof(nome_saida), "Saida%d.txt", i);
+        snprintf(nome_saida, sizeof(nome_saida), "saida%d.txt", caso);
 
 
         FILE *saida = fopen(nome_saida, "w");
@@ -180,8 +182,7 @@ int main(){
                 free(matriz[i]);
             }
             free(matriz);
-         
-            fclose(saida);
+            fclose(entrada);
             return 1;
         }
         exibir(saida, matriz, m);
@@ -195,9 +196,6 @@ int main(){
     }
 
     fclose(entrada);
-    // printf("Seed: %.2f \n Rugosidade depois: %.2f\n", seed, rugosidade);
-    // printf("Origem A: %d \n Origem B: %d \n Origem C: %d \n Origem D: %d \n", origem.A, origem.B, origem.C, origem.D);
-    // printf("Altitude Central: %f \n Rugosidade: %.2f\n", origem.X, rugosidade);
 
     return 0;
 }
