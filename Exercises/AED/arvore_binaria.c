@@ -94,7 +94,7 @@ bool excluir(arvore_t *raiz, int ch_excluir){
         free_subarvore(*raiz);
         *raiz = NULL;
         return true;
-    }
+    }   
     bool deucerto = excluir(&(*raiz)->esq, ch_excluir);
     if(deucerto) return deucerto;
     return excluir(&(*raiz)->dir, ch_excluir);
