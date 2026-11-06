@@ -145,6 +145,7 @@ bool excluir(arvore_t *a, int chave){
         free(no);
         *a = substituto;
     }
+	
     else{
         if(pai->esq != NULL && pai->esq->reg.chave == no->reg.chave){
             pai->esq = substituto;
