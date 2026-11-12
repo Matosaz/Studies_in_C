@@ -132,7 +132,7 @@ bool excluir(arvore_t *a, int chave){
 
         while(substituto->dir != NULL){ //Pega o elemento mais à direita da subárvore esquerda (Mais próximo do elemento que desejamos)
             pai_substituto = substituto; //Atualiza o pai conforme o valor do no_substituto 
-            substituto = substituto->esq;
+            substituto = substituto->dir;
         }
         if(pai_substituto != no){
             pai_substituto->dir = substituto->esq;

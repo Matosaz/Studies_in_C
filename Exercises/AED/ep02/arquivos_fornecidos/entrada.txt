@@ -1,0 +1,5 @@
+I Ana 50
+I Bia 30
+I Caio 70
+T 3
+P Bia
