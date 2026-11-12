@@ -50,10 +50,12 @@ static void inserir_no_pontuacao(no_pontuacao_t **raiz, jogador_t *jogador){
         return;
     }
     if(jogador->pontuacao < (*raiz)->jogador->pontuacao) {//Compara a pontuação com a pontuação do jogador;
-        return inserir_no_pontuacao(&(*raiz)->esquerda, jogador);
+        inserir_no_pontuacao(&(*raiz)->esquerda, jogador);
+        return;
     }
     else if(jogador->pontuacao > (*raiz)->jogador->pontuacao) {//Compara a pontuação com a pontuação do jogador
-        return inserir_no_pontuacao(&(*raiz)->direita, jogador);
+        inserir_no_pontuacao(&(*raiz)->direita, jogador);
+        return;
     }
     else{ //Caso em que o elemento apresenta pontuação igual
         no_pontuacao_t *novo = (no_pontuacao_t*)malloc(sizeof(no_pontuacao_t));
@@ -70,7 +72,13 @@ static void inserir_no_pontuacao(no_pontuacao_t **raiz, jogador_t *jogador){
 
 
 static void inserir_no_nome(no_nome_t **raiz, jogador_t *jogador){
-    if(*raiz == NULL){
+    
+    while(*raiz != NULL){
+        int cmp = strcmp(jogador->nome, (*raiz)->jogador->nome);
+        if(cmp == 0) return;
+        raiz = (cmp < 0) ? &(*raiz)->esquerda : &(*raiz)->direita;
+    }
+    
     no_nome_t *novo = (no_nome_t*)malloc(sizeof(no_nome_t));
     if(novo == NULL) return;
     novo->jogador = jogador;//Atribui o jogador com o nome atualizado ao novo nó da árvore de nomes;
@@ -78,14 +86,6 @@ static void inserir_no_nome(no_nome_t **raiz, jogador_t *jogador){
     novo->direita = NULL;
     novo->dados_auxiliares = NULL;
     *raiz = novo;
-    return;
-    }
-    if(strcmp(jogador->nome, (*raiz)->jogador->nome) < 0){
-        return inserir_no_nome(&(*raiz)->esquerda, jogador);
-    }
-    if(strcmp(jogador->nome, (*raiz)->jogador->nome) > 0){
-        return inserir_no_nome(&(*raiz)->direita, jogador);
-    }
 }
 
 
@@ -106,33 +106,16 @@ static jogador_t *buscar_jogador(no_nome_t *raiz, const char *nome){
         if(cmp == 0){
             return raiz->jogador;
         }
-        if(cmp < 0){
+        else if(cmp < 0){
             raiz = raiz->esquerda;
         }
-        if(cmp > 0){
+        else if(cmp > 0){
             raiz = raiz->direita;
         }
     }
     return NULL;
 }
 
-// static jogador_t *buscar_jogador_com_pai(no_nome_t *raiz, const char *nome, no_nome_t **pai){
-//     *pai = NULL;
-//     char *nome_jogador = raiz->jogador->nome;
-//     while(raiz != NULL){
-//         if(strcmp(nome, nome_jogador) == 0){
-//             return raiz->jogador;
-//         }
-//         *pai = raiz;
-//         if(strcmp(nome, nome_jogador) < 0){
-//             raiz = raiz->esquerda;
-//         }
-//         if(strcmp(nome, nome_jogador) > 0){
-//             raiz = raiz->direita;
-//         }
-//     }
-//     return NULL;
-// }
 
 static void remover_pontuacao(no_pontuacao_t **raiz, jogador_t *jogador){
     if(*raiz == NULL) return;
