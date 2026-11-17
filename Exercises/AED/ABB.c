@@ -136,9 +136,9 @@ bool excluir(arvore_t *a, int chave){
         }
         if(pai_substituto != no){
             pai_substituto->dir = substituto->esq;
-            substituto->esq = no->esq;
+			substituto->dir = no->dir;
         }
-        substituto->dir = no->dir;
+		substituto->esq = no->esq;
     }
 
     if(pai == no){
