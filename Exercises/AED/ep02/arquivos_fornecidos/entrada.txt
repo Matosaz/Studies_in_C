@@ -1,10 +1,9 @@
-I A 50
-I B 100
-I C 100
-I D 200
-I E 300
-I F 300
-T 1
-T 2
-T 3
-P A
+I Ana 10
+I ana 20
+I anab 30
+I an 40
+P Ana
+P ana
+P anab
+P an
+P ANA

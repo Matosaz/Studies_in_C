@@ -1,11 +1,5 @@
-1) F - 300
-1) E - 300
-1) F - 300
-1) E - 300
-2) D - 200
-1) F - 300
-1) E - 300
-2) D - 200
-3) C - 100
-3) B - 100
-A esta na posicao 4
+Ana esta na posicao 4
+ana esta na posicao 3
+anab esta na posicao 2
+an esta na posicao 1
+Jogador nao encontrado

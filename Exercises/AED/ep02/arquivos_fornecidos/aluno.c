@@ -45,6 +45,27 @@ typedef struct{
     no_pilha_t *topo;
 }pilha_t;
 
+typedef struct{
+    int tamanho;
+}auxiliar_t;
+ 
+static int tamanho(no_pontuacao_t *no) {
+    if(no == NULL) return 0;
+    auxiliar_t *no_aux= no->dados_auxiliares;
+    return no_aux->tamanho;
+}
+
+static void atualizar(no_pontuacao_t *no){
+    if(no == NULL) return;
+    auxiliar_t *no_aux = no->dados_auxiliares;
+    no_aux->tamanho = 1 + tamanho(no->esquerda) + tamanho(no->direita); //Encontra o tamanho da subárvore;
+}
+
+static void diminuir_tamanho(no_pontuacao_t *no){
+    auxiliar_t *no_aux = no->dados_auxiliares;
+    no_aux->tamanho--;
+}
+
 static void inicializar_pilha(pilha_t *p){
     p->topo = NULL;
 };
@@ -65,45 +86,53 @@ static void pop(pilha_t *p){
     free(temp);
 }
 
-no_pontuacao_t *peek(pilha_t *p){
+static no_pontuacao_t *peek(pilha_t *p){
     if(p->topo == NULL) return NULL;
     return p->topo->raiz; //Retorno o no que está no topo;
 };
 
 
-static void inserir_no_pontuacao(no_pontuacao_t **raiz, jogador_t *jogador){
-    while(*raiz != NULL){
-        if(jogador->pontuacao < (*raiz)->jogador->pontuacao) {//Compara a pontuação com a pontuação do jogador;
-           raiz = &(*raiz)->esquerda;
-        }
-        else if(jogador->pontuacao > (*raiz)->jogador->pontuacao) {//Compara a pontuação com a pontuação do jogador
-           raiz = &(*raiz)->direita;
-        }  
-        else{ //Caso em que o elemento apresenta pontuação igual
-            no_pontuacao_t *novo = (no_pontuacao_t*)malloc(sizeof(no_pontuacao_t));
-            if(novo == NULL) return;
-            novo->jogador = jogador;
-            novo->esquerda = (*raiz)->esquerda;
-            novo->direita = (*raiz)->direita;
-            novo->meio = *raiz; //Antiga raíz vira o nó do meio com filhos NULOS
-            novo->dados_auxiliares = NULL;
-            (*raiz)->direita = (*raiz)->esquerda = NULL;
-            *raiz = novo;
-            return;
-        }
-    }
-    no_pontuacao_t *novo = (no_pontuacao_t*)malloc(sizeof(no_pontuacao_t));
-    if(novo == NULL) return;
+static no_pontuacao_t *novo_no(jogador_t *jogador){
+    no_pontuacao_t *novo = (no_pontuacao_t *)malloc(sizeof(no_pontuacao_t) + sizeof(auxiliar_t));
+    if(novo == NULL) return NULL;
     novo->jogador = jogador; //Atribui o jogador com a pontuação atualizada ao novo nó da árvore de pontuação;
     novo->esquerda = NULL;
     novo->direita = NULL;
     novo->meio = NULL;
-    novo->dados_auxiliares = NULL;
-    *raiz = novo;
+    novo->dados_auxiliares = novo + 1;
+    atualizar(novo); //Atualiza o tamanho da subárvore;
+    return novo;
+}
+
+static int inserir_no_pontuacao(no_pontuacao_t **raiz, jogador_t *jogador){
+    int criou;
+    if(*raiz == NULL){
+        *raiz = novo_no(jogador); 
+        return (*raiz != NULL);// 1 se raiz foi criada, 0 se não foi criada
+    }
+    if(jogador->pontuacao < (*raiz)->jogador->pontuacao) {//Compara a pontuação com a pontuação do jogador;
+        criou = inserir_no_pontuacao(&(*raiz)->esquerda, jogador);
+    }
+    else if(jogador->pontuacao > (*raiz)->jogador->pontuacao) {//Compara a pontuação com a pontuação do jogador
+        criou =inserir_no_pontuacao(&(*raiz)->direita, jogador);
+    }  
+    else{ //Caso em que o elemento apresenta pontuação igual -> Substitui a pontuação antiga pela nova;
+        no_pontuacao_t *novo = novo_no(jogador);
+        if(novo == NULL) return 0;
+        novo->jogador = jogador;
+        novo->esquerda = (*raiz)->esquerda;
+        novo->direita = (*raiz)->direita;
+        novo->meio = *raiz; //Antiga raíz vira o nó do meio com filhos NULOS
+        (*raiz)->direita = (*raiz)->esquerda = NULL;
+        atualizar(novo);
+        *raiz = novo;
+        return 0;
+    }
+    if(criou) atualizar(*raiz);
+    return criou;
 }
 
 static void inserir_no_nome(no_nome_t **raiz, jogador_t *jogador){
-    
     while(*raiz != NULL){
         int cmp = strcmp(jogador->nome, (*raiz)->jogador->nome);
         if(cmp == 0) return;
@@ -149,66 +178,99 @@ static jogador_t *buscar_jogador(no_nome_t *raiz, const char *nome){
 
 
 static void remover_pontuacao(no_pontuacao_t **raiz, jogador_t *jogador){
-    if(*raiz == NULL) return;
     int pontuacao = jogador->pontuacao;
-    int atual = (*raiz)->jogador->pontuacao;
+    no_pontuacao_t **inicio = raiz;
     no_pontuacao_t *subs;
     
-
-    while(raiz != NULL){
+    while(*raiz != NULL && (*raiz)->jogador->pontuacao != pontuacao){
+        int atual = (*raiz)->jogador->pontuacao;
         if(pontuacao < atual){
             raiz = &(*raiz)->esquerda;
         }
-        if(pontuacao > atual){
+        else{
             raiz = &(*raiz)->direita;
         }
-           //Se caímos no caso de meio e o jogador que iremos excluir não é o inicial
-        else if(((*raiz)->jogador) != jogador){
-            no_pontuacao_t *aux = *raiz;
-            while(aux->meio != NULL && aux->meio->jogador != jogador){
-                aux = aux->meio;
-            }
-            if(aux->meio == NULL) return;
-            no_pontuacao_t *no_excluir = aux->meio; //Encontramos o nó que desejamos excluir do meio;
-            aux->meio = no_excluir->meio; //O meio de aux passa a apontar para o meio do no prester a ser excluído
-            free(no_excluir);
-            return;
+    }
+    if(*raiz == NULL) return;
+     
+    //Se caímos no caso de meio e o jogador que iremos excluir não é o inicial
+    if(((*raiz)->jogador) != jogador){
+        no_pontuacao_t *aux = *raiz;
+        while(aux->meio != NULL && aux->meio->jogador != jogador){
+            aux = aux->meio;
         }
+        if(aux->meio == NULL) return;
+        no_pontuacao_t *no_excluir = aux->meio; //Encontramos o nó que desejamos excluir do meio;
+        aux->meio = no_excluir->meio; //O meio de aux passa a apontar para o meio do no prester a ser excluído
+        free(no_excluir);
+        return;
+    }
 
-        no_pontuacao_t *free_raiz = *raiz;
+    no_pontuacao_t *free_raiz = *raiz;
 
-        if(free_raiz->meio != NULL){
-            no_pontuacao_t *prox = free_raiz->meio;
-            prox->esquerda = free_raiz->esquerda;
-            prox->direita = free_raiz->direita; //O Elemento sucessor do meio assume a posição do inicial
-            *raiz = prox;
+    if(free_raiz->meio != NULL){// Se desejamos remover o nó inicial do meio -> substituimos ele pelo sucessor do meio
+        no_pontuacao_t *prox = free_raiz->meio;
+        prox->esquerda = free_raiz->esquerda;
+        prox->direita = free_raiz->direita; //O Elemento sucessor do meio assume a posição do inicial
+        atualizar(prox);
+        *raiz = prox;
+        free(free_raiz);
+        return;
+    }
+
+    no_pontuacao_t *no = *inicio;
+    //Como removemos um elemento, necessitamos reduzir o tamanho da árvore
+    while(no != free_raiz){
+        diminuir_tamanho(no);
+        if(pontuacao < no->jogador->pontuacao) no = no->esquerda;
+        else no = no->direita;
+    } // *free_raiz = anterior da raiz, pois removemos raiz que ela apontava
+    
+    //Caso de nó com apenas um filho (Basta linkar)
+    if(free_raiz->esquerda == NULL){
+        *raiz = free_raiz->direita;
+    }
+    else if(free_raiz->direita == NULL){
+        *raiz = free_raiz->esquerda;
+    }
+    else{
+        //Caso de nós com dois filhos:
+        no_pontuacao_t *pai_subs = free_raiz;
+        subs = free_raiz->direita;
+        while(subs->esquerda != NULL){
+            diminuir_tamanho(subs); //Reuduz o tamanho dos nós acima do subs
+            pai_subs = subs;
+            subs = subs->esquerda;
         }
-        //Caso de nó com apenas um filho (Basta linkar)
-        else if(free_raiz->esquerda == NULL){
-            *raiz = free_raiz->direita;
+        if(pai_subs != free_raiz){
+            pai_subs->esquerda = subs->direita;
+            subs->direita = free_raiz->direita;
         }
-        else if(free_raiz->direita == NULL){
-            *raiz = free_raiz->esquerda;
+        subs->esquerda = free_raiz->esquerda;
+        atualizar(subs); //Atualiza o tamanho da subárvore após a exclusão
+        *raiz = subs;
+    }
+    free(free_raiz);
+}
+
+static int pegar_posicao(no_pontuacao_t *no, int pontuacao){
+    int maiores = 0;
+    while(no != NULL){
+        int atual = no->jogador->pontuacao;
+        if(pontuacao < atual){
+            maiores += 1 + tamanho(no->direita); //Armazena o número de elementos com pontuação maior;
+            no = no->esquerda;
+        }
+        else if(pontuacao > atual){
+            no = no->direita;
         }
         else{
-            //Caso de nós com dois filhos:
-            no_pontuacao_t *pai_subs = free_raiz;
-            subs = free_raiz->direita;
-
-            while(subs->esquerda != NULL){
-                pai_subs = subs;
-                subs = subs->esquerda;
-            }
-            if(pai_subs != free_raiz){
-                pai_subs->esquerda = subs->direita;
-                subs->direita = free_raiz->direita;
-            }
-            subs->esquerda = free_raiz->esquerda;
-            *raiz = subs;
+            return 1 + maiores + tamanho(no->direita); //Retorna a posição do elemento buscado
         }
-        free(free_raiz);
-        }
+    }
+    return -1;
 }
+
 
 /* ---------- funcoes da interface (obrigatorias) ---------- */
 
@@ -303,27 +365,5 @@ int consultar_posicao_jogador(ranking_t *ranking, const char *nome) {
     jogador_t *jogador = buscar_jogador(ranking->raiz_nome, nome);
     if(!jogador) return -1;
 
-    no_pontuacao_t *no_atual = ranking->raiz_pontuacao;
-    pilha_t pilha;
-    int posicao = 1;
-
-    inicializar_pilha(&pilha);
-    while((no_atual != NULL || pilha.topo != NULL)){
-        while(no_atual != NULL){
-            push(&pilha, no_atual); //Inicia a salvar a partir da raíz e encerra quando estiver no maior elemento;
-            no_atual = no_atual->direita;
-        }
-
-        no_pontuacao_t *no_topo = peek(&pilha);
-        pop(&pilha);
-        if(no_topo->jogador->pontuacao == jogador->pontuacao){
-            while(pilha.topo != NULL){
-                pop(&pilha);
-            }
-            return posicao;
-        }
-        posicao++; //Se o jogador do topo não for o jogador buscado, prossegue para o próximo do ranking(1->2->3->...);
-        no_atual = no_topo->esquerda;
-     }
-    return -1;
+    return pegar_posicao(ranking->raiz_pontuacao, jogador->pontuacao);
 }
